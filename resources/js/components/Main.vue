@@ -47,40 +47,68 @@
                         <div class="l_col adrs">
                             <h2>Add New Address</h2>
 
-                            <form action="" method="">
+                            <form autocomplete="off" @submit.prevent="save" method="post">
                                 <div class="field">
                                     <label>Name *</label>
-                                    <input type="text" value="" palceholder="" class="vl_empty" />
+                                    <input
+                                        type="text"
+                                        value=""
+                                        palceholder=""
+                                        class="vl_empty"
+                                        v-model="formData.name"
+                                        name="name"
+                                    />
+                                    <span class="error" v-show="errors.name">Field is required</span>
                                 </div>
                                 <div class="field">
                                     <label>Your city *</label>
-                                    <select class="vl_empty">
-                                        <option class="plh"></option>
-                                        <option value="1">City 1</option>
-                                        <option value="2">City 2</option>
-                                    </select>
+                                    <region-select
+                                        v-model="formData.city"
+                                        country="US"
+                                        :region="formData.city"
+                                        :regionName=true
+                                        placeholder=""
+                                    />
+                                    <span class="error" v-show="errors.country">Field is required</span>
                                 </div>
                                 <div class="field">
                                     <label>Your area *</label>
-                                    <select>
+                                    <select v-model="formData.area">
                                         <option class="plh"></option>
-                                        <option>Area 1</option>
-                                        <option>Area 2</option>
+                                        <option>Business Bay Area</option>
+                                        <option>West Bay Area</option>
                                     </select>
+                                    <span class="error" v-show="errors.region">Field is required</span>
                                 </div>
 
                                 <div class="field">
                                     <label>Street</label>
-                                    <input type="text" value="" palceholder="" class="vl_empty" />
+                                    <input
+                                        type="text"
+                                        value=""
+                                        palceholder=""
+                                        class="vl_empty"
+                                        v-model="formData.street"
+                                        name="street"
+                                    />
                                 </div>
                                 <div class="field">
                                     <label>House # </label>
-                                    <input type="text" value="" palceholder="House Name / Number" />
+                                    <input
+                                        type="text"
+                                        value=""
+                                        palceholder="House Name / Number"
+                                        v-model="formData.house_number"
+                                        name="house_number"
+                                    />
                                 </div>
 
                                 <div class="field">
                                     <label class="pos_top">Additional information</label>
-                                    <textarea></textarea>
+                                    <textarea
+                                        v-model="formData.additional_information"
+                                        name="street"
+                                    ></textarea>
                                 </div>
 
                                 <div class="field">
@@ -92,21 +120,23 @@
                         <div class="r_col">
                             <h2>My Addresses</h2>
 
-                            <div class="uo_adr_list">
-                                <div class="item">
-                                    <h3>HOME Address</h3>
-                                    <p>Dubai, Business Bay Area, Sheikh Zayed Road, Single </p>
+                            <div class="uo_adr_list" v-show="show_adresses_list">
+                                <div class="item" v-for="(value, key) in adresses_list" :key="value.id">
+                                    <h3>{{ value.name }}</h3>
+                                    <p>{{ value.city }},
+                                        {{ value.area }},
+                                        {{ value.street }},
+                                        {{ value.house_number }},
+                                        <br/>
+                                        {{value.additional_information}}
+                                    </p>
                                     <div class="actbox">
-                                        <a href="#" class="bcross"></a>
+                                        <a href="" class="bcross" @click.prevent="remove(value.id)"></a>
                                     </div>
                                 </div>
-                                <div class="item">
-                                    <h3>Work Address</h3>
-                                    <p>Dubai, Business Bay Area, Sheikh Zayed Road, Single<br/>Business Tower, Suite 2204</p>
-                                    <div class="actbox">
-                                        <a href="#" class="bcross"></a>
-                                    </div>
-                                </div>
+                            </div>
+                            <div class="uo_adr_list" v-show="!show_adresses_list">
+                                ADDRESSES NOT FOUND
                             </div>
                         </div>
                     </div>
@@ -118,8 +148,107 @@
 
 <script>
     export default {
-        mounted() {
-            console.log('Component mounted.')
+        data() {
+            return {
+                formData: {
+                    name: null,
+                    street: null,
+                    house_number: null,
+                    additional_information: null,
+                    area: '',
+                    city: '',
+                },
+                errors: {
+                    name: false,
+                    area: false,
+                    city: false,
+                },
+                adresses_list: [],
+                show_adresses_list: false
+
+            }
+        },
+        created () {
+            this.fetchData();
+            console.log(this.adresses_list.lenght);
+        },
+        methods: {
+            save() {
+                var self = this;
+                if (!this.checkForm(this.formData)) {
+                    axios.post("/add", this.formData)
+                    .then(function(response) {
+                        let data = response.data;
+                        if (data.success) {
+                            for (let key in self.formData) {
+                                let fieldName = key;
+                                if (fieldName == 'country' || fieldName == 'city') {
+                                    self.formData[fieldName] = '';
+                                } else {
+                                    self.formData[fieldName] = null;
+                                }
+                            }
+                            self.fetchData();
+                        }
+                    })
+                    .catch(function(error) {
+                        console.error(error);
+                    });
+                }
+            },
+            checkForm(fields) {
+                let counter = 0;
+
+                if (!fields.name) {
+                    this.errors.name = true;
+                    counter++;
+                } else {
+                    this.errors.name = false;
+                }
+
+                if (!fields.area) {
+                    this.errors.area = true;
+                    counter++;
+                } else {
+                    this.errors.area = false;
+                }
+
+                if (!fields.city) {
+                    this.errors.city = true;
+                    counter++;
+                } else {
+                    this.errors.city = false;
+                }
+
+                return counter;
+            },
+            fetchData() {
+                axios.get('/show')
+                .then((response) => {
+                    let data = response.data;
+                    if (data.success) {
+                        this.adresses_list = data.data;
+                        this.show_adresses_list = true;
+                    } else {
+                        this.show_adresses_list = false;
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            },
+            remove(id) {
+                this.axios.delete('/remove/' + id)
+                .then((response) => {
+                    let data = response.data;
+                    if (data.success) {
+                        this.fetchData();
+                    }
+                })
+                .catch((error) => {
+                    console.log(error);
+                });
+            }
         }
     }
 </script>
