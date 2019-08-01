@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Validator;
 use App\Adress;
 
@@ -20,11 +21,15 @@ class AdressController extends Controller
     */
     public function index()
     {
-        $adresses = Adress::all();
+        $adresses = Adress::orderBy('name')->get();
 
         if (!count($adresses)) {
             return response()->json(['success'=>false], 202);
         }
+
+        // $sorted = array_values(Arr::sort($adresses, function ($value) {
+        //     return $value['name'];
+        // }));
 
         return response()->json(['success'=>true, 'data'=>$adresses], 200);
     }

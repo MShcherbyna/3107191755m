@@ -69,7 +69,7 @@
                                         :regionName=true
                                         placeholder=""
                                     />
-                                    <span class="error" v-show="errors.country">Field is required</span>
+                                    <span class="error" v-show="errors.city">Field is required</span>
                                 </div>
                                 <div class="field">
                                     <label>Your area *</label>
@@ -78,7 +78,7 @@
                                         <option>Business Bay Area</option>
                                         <option>West Bay Area</option>
                                     </select>
-                                    <span class="error" v-show="errors.region">Field is required</span>
+                                    <span class="error" v-show="errors.area">Field is required</span>
                                 </div>
 
                                 <div class="field">
