@@ -13,6 +13,6 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
-});
+Route::post('add', 'AdressController@create');
+Route::get('show', 'AdressController@index');
+Route::delete('remove/{projectId}', 'AdressController@remove');
